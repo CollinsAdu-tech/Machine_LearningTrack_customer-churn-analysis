@@ -527,7 +527,7 @@ analystlab-africa-customer-churn/
 ├── README.md
 │
 ├── notebooks/
-│   └── Week_2_Customer_Churn_Preprocessing.ipynb
+│   └── Machine_Learning_Intern_Week_2.ipynb
 │
 ├── data/
 │       └── Telco_Customer_Churn_ML_Ready.csv
