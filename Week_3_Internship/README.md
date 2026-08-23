@@ -34,14 +34,10 @@ In the telecommunications sector, acquiring a new customer is **5 to 7 times mor
 ```text
 .
 ├── data/
-│   └── telco_churn_processed.csv       # Machine learning-ready clean dataset
-├── docs/
-│   ├── Business_Understanding_Report.pdf
-│   ├── Data_Preprocessing_Report.pdf
-│   ├── Model_Evaluation_Report.pdf
-│   ├── Feature_Importance_Report.pdf
-│   └── AnalystLab_Africa_Week3_Documentation_Reports.docx
-├── notebooks/
+│   └── Telco_Customer_Churn_ML_Ready.csv       # Machine learning-ready clean dataset
+├── reports/
+│   ├── Business_Model_evaluation_feature_importance Report.docx
+├── notebooks/ML_Intern_week_3_.ipynb
 │   └── Customer_Churn_ML_Pipeline.ipynb # Main end-to-end Jupyter Notebook
 ├── visualizations/
 │   ├── viz_1_to_4_confusion_matrices.png
