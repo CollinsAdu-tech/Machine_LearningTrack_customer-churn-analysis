@@ -6,33 +6,6 @@ Proactive Interventions: Target reminders, confirmations, and operational follow
 
 ⚙️ Machine Learning Problem FormulationThe system addresses appointment no-shows as a supervised binary classification problem.  $$\text{Target Variable } (Y): \begin{cases} 1 & \text{if No-Show} \\ 0 & \text{if Attended} \end{cases}$$  Note: Cancelled appointments represent a distinct operational state and are handled separately during preprocessing/modeling phases.  Model Output & Risk CategorizationThe prediction service outputs both a discrete outcome prediction and a calibrated probability score:  Probability Range (P(No-Show))Risk CategoryRecommended Action0.00 – 0.30🟢 LowStandard automated reminder  0.31 – 0.60🟡 MediumMulti-channel reminder (SMS + Email) 
 
-0.61 – 1.00🔴 HighDirect phone call / Priority re-engagement  
-
-🏗️ System Architecture & ML WorkflowThe architecture is designed with modularity, reproducibility, and production scalability in mind.  +-----------------------------------------------------------------------------------+
-|                        OFFLINE ML DEVELOPMENT PIPELINE                             |
-|                                                                                   |
-|  +------------------+     +--------------------+     +------------------------+  |
-|  |   Data Sources   | --> | Data Ingestion &   | --> | Data Preprocessing &   |  |
-|  |  (CSV / SQL DB)  |     | Validation         |     | Feature Engineering    |  |
-|  +------------------+     +--------------------+     +------------------------+  |
-|                                                                  |                |
-|  +------------------+     +--------------------+     +-----------v------------+  |
-|  | Model Registry & | <-- | Model Evaluation & | <-- | Model Training         |  |
-|  | Versioning       |     | Selection          |     | (Baseline & Ensembles) |  |
-|  +--------+---------+     +--------------------+     +------------------------+  |
-+-----------|-----------------------------------------------------------------------+
-            |
-            v
-+-----------------------------------------------------------------------------------+
-|                        ONLINE PREDICTION & SERVING PIPELINE                       |
-|                                                                                   |
-|  +------------------+     +--------------------+     +------------------------+  |
-|  | Client Request   | --> | FastAPI Prediction | --> | HealthConnect Clinical |  |
-|  | (Appointment Payload)| | Service (Inference)|     | Dashboard / Ops Users  |  |
-|  +------------------+     +--------------------+     +------------------------+  |
-+-----------------------------------------------------------------------------------+
-```
-
 ### Major Stages of the ML Workflow
 1. **Data Ingestion & Validation:** Schema checking, missing value detection, duplicate checks, data type casting, and temporal leak checks.
 2. **Preprocessing & Cleaning:** Handling missing attributes (e.g., `reminder_channel`, `distance_to_clinic_km`, `waiting_time_minutes`) via domain-aware imputation.
