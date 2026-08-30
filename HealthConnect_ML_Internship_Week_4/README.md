@@ -1,10 +1,10 @@
-HealthConnect Appointment No-Show Prediction SystemAn enterprise-grade Machine Learning Engineering solution designed for HealthConnect Clinic to predict appointment no-shows, optimize scheduling workflows, and reduce operational inefficiencies[cite: 1, 2]. Developed as part of the AnalystLab Africa Experience Lab Internship Programme[cite: 1, 2].
+HealthConnect Appointment No-Show Prediction SystemAn enterprise-grade Machine Learning Engineering solution designed for HealthConnect Clinic to predict appointment no-shows, optimize scheduling workflows, and reduce operational inefficiencies[. Developed as part of the AnalystLab Africa Experience Lab Internship Programme
 
 📌 Executive Summary & Business ProblemHealthConnect Clinic faces operational and patient support challenges caused by patients missing scheduled appointments without prior notice[cite: 1, 2]. Missed appointments lead to unused time slots, longer wait times for other patients, reduced operational efficiency, and revenue loss[cite: 1, 2].Business ObjectivesIdentify High-Risk Appointments: Predict appointment no-show probabilities prior to scheduled times. 
 
 Proactive Interventions: Target reminders, confirmations, and operational follow-ups to high-risk appointments.  Resource Optimization: Maximize clinic capacity, reduce unused slots, and streamline waiting times[cite: 1, 2].Decision Support: Provide actionable probability metrics to clinical administrators without replacing human judgment.  
 
-⚙️ Machine Learning Problem FormulationThe system addresses appointment no-shows as a supervised binary classification problem.  $$\text{Target Variable } (Y): \begin{cases} 1 & \text{if No-Show} \\ 0 & \text{if Attended} \end{cases}$$  Note: Cancelled appointments represent a distinct operational state and are handled separately during preprocessing/modeling phases.  Model Output & Risk CategorizationThe prediction service outputs both a discrete outcome prediction and a calibrated probability score:  Probability Range (P(No-Show))Risk CategoryRecommended Action0.00 – 0.30🟢 LowStandard automated reminder  0.31 – 0.60🟡 MediumMulti-channel reminder (SMS + Email) 
+
 
 ### Major Stages of the ML Workflow
 1. **Data Ingestion & Validation:** Schema checking, missing value detection, duplicate checks, data type casting, and temporal leak checks.
