@@ -121,4 +121,32 @@ python -m venv venv
 venv\Scripts\activate
 Install Dependencies:Bashpip install --upgrade pip
 pip install -r requirements.txt
-📈 Model Evaluation MetricsModel performance is evaluated using metrics balanced for class distribution[cite: 2]:Recall (Sensitivity): Primary focus—maximizing detection of actual no-shows to enable intervention[cite: 2].Precision: Minimizing false alarms to avoid unnecessary administrative intervention[cite: 2].F1-Score: Harmonic mean balancing Precision and Recall[cite: 2].ROC-AUC & PR-AUC: Discrimination capability across confidence thresholds[cite: 2].Confusion Matrix: Detailed breakdown of True Positives, False Positives, True Negatives, and False Negatives[cite: 2].🛡️ Ethics, Governance & SafetyFairness & Bias: Continuous evaluation across age groups and demographics to prevent systematic bias[cite: 2].Decision-Support Guardrails: Model output serves strictly as a clinical support tool and is never used to deny care or cancel appointments automatically[cite: 2].Data Privacy: Full anonymization of patient identifiers with compliance to healthcare data privacy standards[cite: 2].🗓️ Development Roadmap & Progress[x] Week 4: Project Kickoff & System Architecture Design[cite: 1, 2]ML Problem Definition & Target Mapping[cite: 2]High-Level Architecture & Workflow Design[cite: 2]Data Dictionary & Leakage Assessment[cite: 2]Repository Structure Setup[cite: 2][ ] Week 5: Exploratory Analysis & Baseline Modeling[cite: 3]Complete Data Cleaning & Imputation Pipelines[cite: 3]Feature Engineering (previous_no_show_rate, lead time bins)[cite: 2, 3]Train baseline Logistic Regression & Tree-based models[cite: 2, 3][ ] Week 6: Model Optimization & Ensemble RefinementHyperparameter tuning & Cross-validationThreshold tuning for optimal Recall/Precision balance[ ] Week 7: Serialization & Serving InterfaceModel export via Joblib & REST API prototype development[ ] Week 8: Project Wrap-up & Final Presentation📄 LicenseDistributed under the MIT License. See LICENSE for more information.✉️ Contact & AcknowledgmentsAuthor: Machine Learning Engineering Intern[cite: 1, 2]Program: AnalystLab Africa Experience Lab Internship Programme[cite: 1]Mentorship & Guidance: AnalystLab Africa ML Track Instructors[cite: 1]
+📈 Model Evaluation MetricsModel performance is evaluated using metrics balanced for class distribution[cite: 2]:
+Recall (Sensitivity): Primary focus—maximizing detection of actual no-shows to enable intervention[cite: 2].
+Precision: Minimizing false alarms to avoid unnecessary administrative intervention[cite: 2]
+.F1-Score: Harmonic mean balancing Precision and Recall[cite: 2].
+ROC-AUC & PR-AUC: Discrimination capability across confidence thresholds[cite: 2].
+Confusion Matrix: Detailed breakdown of True Positives, False Positives, True Negatives, and False Negatives[cite: 2].
+
+🛡️ Ethics, Governance & SafetyFairness & Bias: Continuous evaluation across age groups and demographics to prevent systematic bias[cite: 2].
+Decision-Support Guardrails: Model output serves strictly as a clinical support tool and is never used to deny care or cancel appointments automatically[cite: 2].
+Data Privacy: Full anonymization of patient identifiers with compliance to healthcare data privacy standards[cite: 2].
+
+🗓️ Development Roadmap & Progress[x] 
+Week 4: Project Kickoff & System Architecture Design[cite: 1, 2]
+ML Problem Definition & Target Mapping[cite: 2]
+High-Level Architecture & Workflow Design[cite: 2]
+
+Data Dictionary & Leakage Assessment[cite: 2]
+Repository Structure Setup[cite: 2][ ] 
+Week 5: Exploratory Analysis & Baseline Modeling[cite: 3]
+Complete Data Cleaning & Imputation Pipelines[cite: 3]
+Feature Engineering (previous_no_show_rate, lead time bins)[cite: 2, 3]
+Train baseline Logistic Regression & Tree-based models[cite: 2, 3][ ] 
+
+Week 6: Model Optimization & Ensemble RefinementHyperparameter tuning & Cross-validationThreshold tuning for optimal Recall/Precision balance[ ] Week 7: Serialization & Serving InterfaceModel export via Joblib & REST API prototype development[ ] Week 8: Project Wrap-up & Final Presentation📄 LicenseDistributed under the MIT License. See LICENSE for more information.
+
+✉️ Contact & AcknowledgmentsAuthor: 
+Machine Learning Engineering Intern[cite: 1, 2]
+Program: AnalystLab Africa Experience Lab Internship Programme[cite: 1]
+Mentorship & Guidance: AnalystLab Africa ML Track Instructors[cite: 1]
