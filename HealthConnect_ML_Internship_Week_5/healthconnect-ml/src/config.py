@@ -76,3 +76,29 @@ SECONDARY_METRICS = CONFIG["evaluation"]["secondary_metrics"]
 
 RISK_LOW_MAX = CONFIG["risk_categories"]["low_max"]
 RISK_MEDIUM_MAX = CONFIG["risk_categories"]["medium_max"]
+
+# ---------------------------------------------------------------------------
+# Week 6 — Data Science candidate models (separate schema from the Week 5
+# baseline above — see configs/config.yaml for why these are kept distinct)
+# ---------------------------------------------------------------------------
+
+_CANDIDATES = CONFIG["candidate_models"]
+
+CANDIDATE_LOGREG_PATH = PROJECT_ROOT / _CANDIDATES["logistic_regression"]["artifact_path"]
+CANDIDATE_GB_PATH = PROJECT_ROOT / _CANDIDATES["gradient_boosting"]["artifact_path"]
+
+CANDIDATE_NUMERICAL_FEATURES = _CANDIDATES["numerical_features"]
+CANDIDATE_CATEGORICAL_FEATURES = _CANDIDATES["categorical_features"]
+CANDIDATE_ALL_FEATURES = CANDIDATE_NUMERICAL_FEATURES + CANDIDATE_CATEGORICAL_FEATURES
+
+CANDIDATE_FORBIDDEN_COLUMNS = _CANDIDATES["forbidden_columns"]
+CANDIDATE_FITTED_CATEGORIES = _CANDIDATES["fitted_categories"]
+CANDIDATE_REPORTED_EVALUATION = _CANDIDATES["reported_evaluation"]
+
+_HISTORICAL_RATE_SPEC = _CANDIDATES["feature_derivation"]["historical_no_show_rate"]
+HISTORICAL_RATE_NUMERATOR = _HISTORICAL_RATE_SPEC["numerator"]
+HISTORICAL_RATE_DENOMINATOR = _HISTORICAL_RATE_SPEC["denominator"]
+HISTORICAL_RATE_FALLBACK = _HISTORICAL_RATE_SPEC["fallback_when_denominator_zero"]
+
+_NULL_HANDLING_SPEC = _CANDIDATES["required_null_handling"]["reminder_channel"]
+CANDIDATE_REMINDER_CHANNEL_NULL_REPLACEMENT = _NULL_HANDLING_SPEC["required_replacement"]

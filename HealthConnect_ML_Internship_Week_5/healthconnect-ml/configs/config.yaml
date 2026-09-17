@@ -103,3 +103,94 @@ risk_categories:
   # Thresholds from the Week 4 ML System Design Document
   low_max: 0.30
   medium_max: 0.60
+
+# ---------------------------------------------------------------------------
+# Week 6 — Data Science candidate models
+# ---------------------------------------------------------------------------
+# These are separate, verified artifacts received from Data Science in the
+# Week 6 handoff (HealthConnect_Week6_DataScience_Deliverable.md). They are
+# NOT the same as the Week 5 baseline trained by src/models/train.py above —
+# that pipeline stays as-is. This section defines a distinct, self-contained
+# schema for the DS-provided models, since their feature set (11 columns) is
+# a deliberate subset of the Week 5 ML Engineering feature set (16 columns).
+#
+# All values below were verified against the actual .joblib artifacts before
+# being written here — not copied from the handoff document unchecked. See
+# reports/week6_model_verification.md for the verification evidence.
+candidate_models:
+  logistic_regression:
+    artifact_path: "models/candidates/healthconnect_logreg_pipeline.joblib"
+  gradient_boosting:
+    artifact_path: "models/candidates/healthconnect_gb_pipeline.joblib"
+
+  # Exact schema both pipelines were fitted on (verified by inspecting each
+  # ColumnTransformer directly, not assumed from the handoff text).
+  numerical_features:
+    - "age"
+    - "booking_lead_days"
+    - "previous_appointments"
+    - "previous_no_shows"
+    - "historical_no_show_rate"   # computed upstream, see feature_derivation below
+    - "distance_to_clinic_km"
+  categorical_features:
+    - "gender"
+    - "appointment_type"
+    - "appointment_day"
+    - "appointment_time"
+    - "reminder_channel"
+
+  # historical_no_show_rate is not a raw input column — it must be derived
+  # before calling either pipeline. Formula verified against DS's handoff
+  # and matches the existing prior_no_show_rate logic in
+  # src/features/feature_engineering.py (same computation, different name).
+  feature_derivation:
+    historical_no_show_rate:
+      numerator: "previous_no_shows"
+      denominator: "previous_appointments"
+      fallback_when_denominator_zero: 0.0
+
+  # CONFIRMED BUG (verified by direct testing against both artifacts): raw
+  # NaN in reminder_channel is silently treated by OneHotEncoder as an
+  # unseen category (all-zero one-hot row), NOT matched to the fitted
+  # "None" category, even though "None" exists specifically to represent
+  # "no reminder was sent." This produces materially different predictions
+  # (e.g. 0.776 vs 0.789 probability on the same underlying record) with no
+  # error or warning. This step is therefore MANDATORY, not optional
+  # cleanup, before calling either candidate pipeline.
+  required_null_handling:
+    reminder_channel:
+      raw_missing_behavior: "NaN in a raw CSV read"
+      required_replacement: "None"   # literal string, matches a real fitted category
+
+  # Columns that must never reach either candidate pipeline (same leakage
+  # rules as the Week 5 baseline — carried over, not re-derived).
+  forbidden_columns: ["appointment_outcome", "waiting_time_minutes"]
+
+  # Fitted one-hot categories, verified directly against both artifacts
+  # (identical between the two models — they share preprocessing).
+  fitted_categories:
+    gender: ["Female", "Male", "Prefer not to say"]
+    appointment_type: ["Diagnostic Test", "Follow-up", "General Consultation", "Specialist Consultation"]
+    appointment_day: ["Friday", "Monday", "Saturday", "Sunday", "Thursday", "Tuesday", "Wednesday"]
+    appointment_time: ["Afternoon", "Evening", "Morning"]
+    reminder_channel: ["Email", "None", "SMS", "WhatsApp"]
+
+  output_contract:
+    prediction_positive_label: "No-Show"   # prediction == 1
+    prediction_negative_label: "Attended"  # prediction == 0
+    probability_column: "predict_proba()[:, 1]"
+
+  # From the DS Week 6 deliverable (Section 5) — recorded for reference and
+  # to detect drift if the artifacts are ever regenerated. NOT re-derived
+  # here at import time; see tests/test_candidate_models.py for the
+  # independently-reproduced verification of these numbers.
+  reported_evaluation:
+    split: "GroupShuffleSplit(test_size=0.2, random_state=42), grouped by patient_id"
+    logistic_regression:
+      accuracy: 0.6346
+      roc_auc: 0.6825
+      confusion_matrix: {tn: 294, fp: 189, fn: 164, tp: 319}
+    gradient_boosting:
+      accuracy: 0.6511
+      roc_auc: 0.6941
+      confusion_matrix: {tn: 307, fp: 176, fn: 161, tp: 322}
