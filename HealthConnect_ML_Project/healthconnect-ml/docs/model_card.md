@@ -65,7 +65,7 @@ bootstrap CI) that the baseline's additional engineered features
 `historical_no_show_rate` is derived upstream (`previous_no_shows /
 previous_appointments`, 0.0 fallback), not a raw input field.
 
-### Evaluation (held-out test set, n=966, independently reproduced)
+### Evaluation (held-out test set, n=966, independently reproduced — Week 6 single-seed result)
 
 | Metric | Logistic Regression | Gradient Boosting |
 |---|---:|---:|
@@ -74,14 +74,70 @@ previous_appointments`, 0.0 fallback), not a raw input field.
 | Recall (No-Show) | 66.0% | 66.7% |
 | Confusion matrix | TN294/FP189/FN164/TP319 | TN307/FP176/FN161/TP322 |
 
-**Statistical significance (DS's bootstrap, 3,000 resamples):** AUC
-difference (GB − LR) mean +0.0115, 95% CI [+0.0003, +0.0229] — real but
-small. GB does not shrink the "uncertain zone" (predictions in 0.4–0.6);
-it grows slightly (37.1% → 45.7%) while sharpening accuracy outside it.
+**⚠️ Superseded by Week 7 multi-seed testing — see below.** The table
+above reflects only `random_state=42`. Do not read it as "GB is better."
 
-**Feature importance (GB):** `booking_lead_days` = 66.5% of total
-importance — the model is dominated by one feature. Flagged explicitly by
-Data Science as a reason not to over-trust the improvement.
+### Week 7 update: multi-seed stability test retracts the Week 6 "GB is better" conclusion — pending methodology confirmation
+
+Data Science reported re-running the AUC comparison across 5 random seeds:
+
+| Seed | DS-reported AUC gap (GB − LR) |
+|---|---:|
+| 42 | +0.0116 |
+| 7 | +0.0015 |
+| 123 | −0.0028 |
+| 2024 | −0.0127 |
+| 99 | −0.0077 |
+
+**DS-reported mean: −0.002.** GB wins on 2 of 5 seeds and loses on 3 —
+statistically indistinguishable from a coin flip, per their report.
+
+**⚠️ Independently re-tested — result does not match, for a specific,
+identified reason.** Running the same 5 seeds against the actual
+`.joblib` artifacts in this repo (same `GroupShuffleSplit` methodology)
+produces **GB winning 5/5, mean gap +0.0121** — matching Data Science's
+number only at seed 42. Investigation found the GB artifact is fully
+deterministic (`subsample=1.0`, `max_features=None`, fixed
+`random_state=42`) — so evaluating the *same fitted model* across
+different test splits cannot reproduce sign-flipping results. This
+strongly suggests Data Science's test **retrained both models per seed**
+(a test of training-process stability), while my test evaluated the
+*existing, already-fitted* artifacts across different test partitions (a
+test of test-set-sampling robustness) — two different, both legitimate,
+questions with two different answers. See
+`reports/week7_multiseed_verification.md` for the full investigation.
+
+**Practical takeaway pending Data Science's confirmation of their
+methodology:** the retraction may still be correct — if a future GB
+refit is genuinely as likely to underperform LR as outperform it, that's
+important and this pipeline should keep treating both models as
+interchangeable, which it already does. But it does *not* mean the two
+specific artifacts currently in `models/candidates/` are unstable
+against each other — on this pipeline's actual deployed pair, GB
+consistently wins across test-set variation. Both facts can be true at
+once; neither is being asserted as the final word here.
+
+**Either way, this pipeline requires no code change.** `predict()`'s
+dispatcher was already built in Week 6 to route by caller-selected
+`model_name` with no hardcoded preference — see `src/models/predict.py`.
+
+**Feature importance (GB, seed 42 only):** `booking_lead_days` = 66.5% of
+total importance. Given the multi-seed instability above, this
+single-feature dominance is now read as a likely contributor to GB's
+seed-sensitivity, not just a general caution.
+
+### Week 7 update: segment-level weak spots identified
+
+Regardless of which model is used, both show reduced reliability on:
+
+| Segment | AUC | Recall (No-Show) | vs. overall |
+|---|---:|---:|---|
+| Age 65+ | 0.664 | 0.595 | below overall (0.694 / 0.667) |
+| Specialist Consultation | 0.616 | 0.553 | weakest segment found |
+
+Any confidence-flagging logic added to this pipeline should treat
+predictions in these two segments as lower-trust, regardless of which
+model produced them.
 
 ---
 
@@ -114,14 +170,16 @@ never attended).
 - Not directly comparable to the candidates' metrics, since the split
   methodology differs.
 
-**Candidate-specific (from Data Science's own deliverable):**
-- Effect size (GB vs. LR) is small — +0.012 AUC, not operationally
-  transformative on its own.
-- Single-seed evaluation — stability across other random seeds untested
-  (explicit Data Science Week 7 item).
-- Uncertain zone (37–46% of predictions) is large and does not shrink
-  with the improved model — a feature-set ceiling, not a model-tuning
-  problem, per Data Science's own interpretation.
+**Candidate-specific (updated per Week 7 Data Science handoff):**
+- **No model recommendation currently stands.** The Week 6 "GB is better"
+  conclusion was a single-seed artifact — see the multi-seed table above.
+  Data Science is redoing the recommendation with multi-seed evidence in
+  hand; treat neither model as the pipeline's default until that lands.
+- Two segments (age 65+, Specialist Consultation) show materially reduced
+  reliability for both models — see Week 7 update above.
+- Uncertain zone (predictions in 0.4–0.6) was 37.1% for LR / 45.7% for GB
+  at seed 42 — large regardless of model, a likely feature-set ceiling
+  per Data Science's own interpretation.
 - No calibration check performed yet.
 
 **Shared across all models:**
@@ -129,7 +187,8 @@ never attended).
   HealthConnect patients is unverified.
 - Two feature groups (reminder timing, historical-count construction) are
   included pending confirmation of modeling assumptions not stated in the
-  source data dictionary — unresolved as of Week 6.
+  source data dictionary — **still unresolved as of Week 7; being
+  escalated to Project Management this week per Data Science.**
 - No causal claims — all relationships are correlational.
 
 ## Ethical Considerations

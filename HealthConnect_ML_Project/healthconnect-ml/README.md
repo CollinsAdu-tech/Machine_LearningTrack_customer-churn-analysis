@@ -28,7 +28,7 @@ Three models are callable through one interface —
 |---|---|---|---|
 | `"baseline"` (default) | Week 5, trained by this repo | 16 | Original pipeline, unchanged since Week 5 |
 | `"logistic_regression"` | Week 6, Data Science artifact | 11 | Verified reload-identical, metrics independently reproduced |
-| `"gradient_boosting"` | Week 6, Data Science artifact | 11 | DS's recommended candidate — see caveats in `reports/week6_model_verification.md` |
+| `"gradient_boosting"` | Week 6, Data Science artifact | 11 | ⚠️ Week 6's "better than LR" claim was retracted after multi-seed testing (see `docs/model_card.md`) — treat as interchangeable with LR, not superior |
 
 ## Repository Structure
 
@@ -92,7 +92,7 @@ print(predict(record, model_name='gradient_boosting'))
 pytest tests/ -v
 ```
 
-**67/67 tests passing** across 7 files:
+**85/85 tests passing** across 8 files:
 - `test_data.py`, `test_preprocessing.py`, `test_features.py`,
   `test_model.py`, `test_pipeline.py` — Week 5 baseline (33 tests,
   unchanged since Week 5)
@@ -100,6 +100,12 @@ pytest tests/ -v
   tests), including a pinned regression test for a confirmed
   `reminder_channel` null-handling bug found during integration
 - `test_predict_dispatcher.py` — Week 6 model-routing layer (13 tests)
+- `test_week7_edge_cases.py` — Week 7 invalid-input testing (18 tests):
+  found and fixed 3 real bugs (null-valued required fields, wrong-type
+  values, a logically-impossible field combination silently reaching the
+  model), and documented 3 known, lower-severity input gaps — see
+  `reports/week7_pipeline_test_results.md` for the full Test → Finding →
+  Action → Retest record.
 
 Verified reproducible from a genuinely clean environment — see
 `reports/week6_reproducibility_check.md`.
@@ -143,6 +149,12 @@ Full details: `docs/model_card.md`, `reports/week6_model_verification.md`.
 - `reports/week6_reproducibility_check.md` — clean-environment verification
 - `reports/week6_project_summary.md` — concise Week 6 summary
 - `reports/week7_ml_engineering_testing_plan.md` — proposed Week 7 focus
+- `reports/week7_ds_handoff_update.md` — Week 7 Data Science update (multi-seed retraction, segment weak spots)
+- `reports/week7_pipeline_test_results.md` — Week 7 edge-case testing results (3 bugs found and fixed, 3 gaps documented)
+- `reports/week7_multiseed_verification.md` — independent re-test of Data Science's multi-seed retraction (discrepancy found and investigated)
+- `reports/week7_ds_feedback.md` — feedback sent to Data Science on the multi-seed discrepancy
+- `reports/week7_cross_track_testing.md` — mandatory HC-POD cross-track testing record
+- `reports/week7_project_summary.md` — concise Week 7 summary
 
 ## Project Progress
 
@@ -157,24 +169,51 @@ Full details: `docs/model_card.md`, `reports/week6_model_verification.md`.
   integration bug (`reminder_channel` null handling), reported it back to
   Data Science, and pinned it with a regression test. Verified full
   reproducibility from a clean environment with pinned dependencies.
+- **Week 7:** Data Science ran a multi-seed stability test on the Week 6
+  "GB beats LR" claim — reported as not holding up (mean AUC gap −0.002
+  across 5 seeds; GB wins 2, loses 3). **Independently re-tested against
+  the actual delivered artifacts — did not reproduce** (this pipeline's
+  re-test: GB wins 5/5, mean +0.0121). Root cause traced to the GB
+  artifact being fully deterministic, meaning the two tests likely
+  measured different things (retrain-per-seed vs. fixed-model-per-seed)
+  — sent back to Data Science as a specific clarifying question rather
+  than silently adopting either conclusion (see
+  `reports/week7_multiseed_verification.md`). Since `predict()`'s
+  dispatcher already treated both models symmetrically, no code change
+  was required either way — only transparent documentation of the open
+  question. Data Science also identified two lower-reliability segments
+  (age 65+, Specialist Consultation) applicable to both models.
+  Separately, a full edge-case testing pass on the pipeline itself found
+  and fixed 3 real input-validation bugs (null-valued required fields,
+  wrong-type values, and an unenforced logical-consistency rule silently
+  reaching the model) — see `reports/week7_pipeline_test_results.md`.
 
 ## Known open items (not silently carried forward)
 
+- **Model selection between LR and GB has no basis yet, and the
+  situation is more unsettled than it first appears** — the Week 6 case
+  for GB didn't survive Data Science's multi-seed testing, but this
+  pipeline's independent re-test of that same multi-seed claim also
+  didn't reproduce (GB won 5/5 here vs. 2/5 reported), for a specific,
+  identified reason pending Data Science's confirmation — see
+  `reports/week7_multiseed_verification.md`. `model_name` remains purely
+  the caller's choice, not a pipeline default, regardless of how this
+  resolves.
 - Two conditional-feature assumptions from Week 5 remain unresolved
-  (reminder timing, historical-count construction) — pending PM/business
-  input, per Data Science's own handoff.
+  (reminder timing, historical-count construction) — being escalated to
+  Project Management this week, per Data Science's Week 7 update.
 - Week 5 baseline still uses a plain stratified split, not group-aware —
-  makes it not directly comparable to the Week 6 candidates. Week 7 fix.
-- Model selection (baseline vs. LR vs. GB) is intentionally undecided —
-  Data Science's own caution against treating the GB improvement as
-  settled (small effect, single-seed) means this is a Week 7+
-  business/PM decision, not made here.
+  makes it not directly comparable to the Week 6/7 candidates. Week 7 fix.
+- Two segments (age 65+, Specialist Consultation) show meaningfully lower
+  reliability for both candidate models — worth surfacing if any
+  confidence-flagging logic is added to the pipeline.
 
 ## Future Improvements
 
 - Group-aware train/test split for the Week 5 baseline (Week 7).
 - Schema-drift detection for the candidate model artifacts (Week 7).
 - Runtime/performance benchmarking (Week 7).
+- Segment-aware confidence flagging (age 65+, Specialist Consultation) — new, Week 7.
 - FastAPI-based prediction service.
 - Docker containerization and cloud deployment.
 - Automated retraining and drift monitoring per the Week 4 architecture.

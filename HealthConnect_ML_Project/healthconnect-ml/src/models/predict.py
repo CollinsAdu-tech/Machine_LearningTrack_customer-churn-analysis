@@ -38,7 +38,12 @@ from src.models.candidate_models import (
     CandidateModelInputError,
     predict_with_candidate,
 )
-from src.models.model_utils import risk_category_for_probability, select_model_features
+from src.models.model_utils import (
+    find_non_numeric_fields,
+    find_null_fields,
+    risk_category_for_probability,
+    select_model_features,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +68,17 @@ REQUIRED_RAW_FIELDS = [
     "distance_to_clinic_km",
 ]
 
+# Week 7 addition: which of the required raw fields must be numeric.
+# Used by find_non_numeric_fields() to catch e.g. age="thirty-nine"
+# before it reaches sklearn.
+NUMERIC_RAW_FIELDS = [
+    "age",
+    "booking_lead_days",
+    "previous_appointments",
+    "previous_no_shows",
+    "distance_to_clinic_km",
+]
+
 
 class PredictionInputError(Exception):
     """Raised when a prediction request is malformed, missing fields, or
@@ -82,6 +98,32 @@ def _validate_request(record: dict) -> None:
     missing = [f for f in REQUIRED_RAW_FIELDS if f not in record]
     if missing:
         raise PredictionInputError(f"Request is missing required field(s): {missing}")
+
+    # Week 7: catch None values and wrong types before they reach the model
+    # (found during Week 7 edge-case testing — see
+    # reports/week7_ml_engineering_testing_plan.md and
+    # reports/week7_pipeline_test_results.md for the test that found this).
+    null_fields = find_null_fields(record, REQUIRED_RAW_FIELDS)
+    if null_fields:
+        raise PredictionInputError(f"Request has null (None) value(s) for required field(s): {null_fields}")
+
+    non_numeric = find_non_numeric_fields(record, NUMERIC_RAW_FIELDS)
+    if non_numeric:
+        raise PredictionInputError(
+            f"Request has non-numeric value(s) for field(s) that must be numeric: {non_numeric}"
+        )
+
+    # Week 7: logical-consistency check, mirroring the same rule already
+    # enforced at the dataset-validation stage (src/data/validate_data.py)
+    # — a patient cannot have more previous no-shows than previous
+    # appointments. Found during Week 7 testing that this was NOT enforced
+    # at prediction time, only at training-data validation time.
+    if record["previous_no_shows"] > record["previous_appointments"]:
+        raise PredictionInputError(
+            f"previous_no_shows ({record['previous_no_shows']}) cannot exceed "
+            f"previous_appointments ({record['previous_appointments']}) — logically "
+            f"inconsistent input."
+        )
 
 
 def _build_feature_row(record: dict) -> pd.DataFrame:

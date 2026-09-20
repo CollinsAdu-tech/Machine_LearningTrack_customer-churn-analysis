@@ -43,7 +43,11 @@ import numpy as np
 import pandas as pd
 
 from src import config
-from src.models.model_utils import risk_category_for_probability
+from src.models.model_utils import (
+    find_non_numeric_fields,
+    find_null_fields,
+    risk_category_for_probability,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +65,15 @@ REQUIRED_RAW_FIELDS = [
     "appointment_day",
     "appointment_time",
     "reminder_channel",
+]
+
+# Week 7 addition: which required fields must be numeric.
+NUMERIC_RAW_FIELDS = [
+    "age",
+    "booking_lead_days",
+    "previous_appointments",
+    "previous_no_shows",
+    "distance_to_clinic_km",
 ]
 
 
@@ -81,6 +94,28 @@ def _validate_request(record: dict) -> None:
     missing = [f for f in REQUIRED_RAW_FIELDS if f not in record]
     if missing:
         raise CandidateModelInputError(f"Request is missing required field(s): {missing}")
+
+    # Week 7: same null/type/consistency checks added to predict.py's
+    # baseline path — found via edge-case testing that None values and
+    # wrong types were silently reaching the model here too.
+    null_fields = find_null_fields(record, REQUIRED_RAW_FIELDS)
+    if null_fields:
+        raise CandidateModelInputError(
+            f"Request has null (None) value(s) for required field(s): {null_fields}"
+        )
+
+    non_numeric = find_non_numeric_fields(record, NUMERIC_RAW_FIELDS)
+    if non_numeric:
+        raise CandidateModelInputError(
+            f"Request has non-numeric value(s) for field(s) that must be numeric: {non_numeric}"
+        )
+
+    if record["previous_no_shows"] > record["previous_appointments"]:
+        raise CandidateModelInputError(
+            f"previous_no_shows ({record['previous_no_shows']}) cannot exceed "
+            f"previous_appointments ({record['previous_appointments']}) — logically "
+            f"inconsistent input."
+        )
 
 
 def compute_historical_no_show_rate(df: pd.DataFrame) -> pd.Series:

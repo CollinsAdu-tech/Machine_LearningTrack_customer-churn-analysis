@@ -76,3 +76,44 @@ def risk_category_for_probability(proba: float) -> str:
     elif proba <= config.RISK_MEDIUM_MAX:
         return "Medium"
     return "High"
+
+
+def find_null_fields(record: dict, required_fields: list[str]) -> list[str]:
+    """
+    Week 7 addition. Return required fields whose value is None.
+
+    Discovered during Week 7 edge-case testing: a field being *present* in
+    the request dict (checked elsewhere) does not mean its value isn't
+    None. Before this check existed, {"age": None, ...} passed the
+    "missing field" check (the key exists) and was silently fed straight
+    into the model, producing a prediction with no error or warning. This
+    closes that gap.
+    """
+    return [f for f in required_fields if f in record and record[f] is None]
+
+
+def find_non_numeric_fields(record: dict, numeric_fields: list[str]) -> list[str]:
+    """
+    Week 7 addition. Return numeric fields whose supplied value is not
+    actually a number.
+
+    Discovered during Week 7 edge-case testing: passing a string (e.g.
+    age="thirty-nine") was not caught by our own validation — it
+    propagated all the way into sklearn's SimpleImputer, which raised a
+    raw, unfriendly ValueError ("Cannot use median strategy with
+    non-numeric data") with no indication of which field or model caused
+    it. This lets predict.py/candidate_models.py raise their own named
+    error before the bad value ever reaches the model.
+
+    bool is deliberately excluded from "non-numeric" (bool is a subclass
+    of int in Python, and there's no legitimate boolean value among these
+    fields anyway, so a stray True/False should still be flagged).
+    """
+    bad = []
+    for f in numeric_fields:
+        if f not in record or record[f] is None:
+            continue  # handled by find_null_fields / missing-field check
+        value = record[f]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            bad.append(f)
+    return bad
