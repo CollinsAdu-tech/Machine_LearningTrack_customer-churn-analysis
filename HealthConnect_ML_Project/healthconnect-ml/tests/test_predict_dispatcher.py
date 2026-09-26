@@ -114,3 +114,31 @@ def test_predict_rejects_forbidden_field_regardless_of_model(model_name):
     )
     with pytest.raises((PredictionInputError, CandidateModelInputError)):
         predict(record, model_name=model_name)
+
+
+# ---------------------------------------------------------------------------
+# Week 8 — predict_final() convenience wrapper
+# ---------------------------------------------------------------------------
+
+def test_predict_final_matches_explicit_final_model_call():
+    from src.models.predict import predict_final
+    from src import config
+
+    record = make_candidate_record()
+    result_final = predict_final(record)
+    result_explicit = predict(record, model_name=config.FINAL_MODEL_NAME)
+    assert result_final == result_explicit
+
+
+def test_predict_final_uses_gradient_boosting():
+    from src.models.predict import predict_final
+
+    result = predict_final(make_candidate_record())
+    assert result["model_used"] == "gradient_boosting"
+
+
+def test_predict_default_unaffected_by_final_model_addition():
+    """Guards against predict_final()'s addition ever accidentally
+    changing predict()'s own default — must always remain 'baseline'."""
+    result = predict(make_baseline_record())
+    assert result["model_used"] == "baseline"

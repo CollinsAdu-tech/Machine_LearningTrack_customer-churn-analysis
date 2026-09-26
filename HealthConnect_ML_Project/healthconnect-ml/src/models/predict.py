@@ -238,3 +238,24 @@ def predict(record: dict, pipeline=None, model_name: str = "baseline") -> dict:
         result["risk_category"],
     )
     return result
+
+
+def predict_final(record: dict) -> dict:
+    """
+    Predict using the Week 8-confirmed final model
+    (config.FINAL_MODEL_NAME — currently "gradient_boosting").
+
+    This is a convenience wrapper for demonstration and presentation use,
+    added in Week 8 once Data Science confirmed a final model. It is
+    intentionally NOT the default for predict() itself — predict()'s
+    default remains "baseline" so every existing call site (and its
+    tests) is unaffected. Use this function specifically when "the
+    pipeline's current best answer" is what's wanted, e.g. in a demo
+    script or the final presentation materials.
+
+    See configs/config.yaml's `final_model` key and
+    reports/week8_final_model_decision.md (the reasoning) and
+    reports/week8_multiseed_resolution.md (the evidence resolving the
+    Week 7 multi-seed discrepancy) for the full basis of this choice.
+    """
+    return predict(record, model_name=config.FINAL_MODEL_NAME)

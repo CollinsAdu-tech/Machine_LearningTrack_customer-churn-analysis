@@ -84,6 +84,13 @@ RISK_MEDIUM_MAX = CONFIG["risk_categories"]["medium_max"]
 
 _CANDIDATES = CONFIG["candidate_models"]
 
+# Week 8: the confirmed final model selection. Recorded for reference and
+# for any future code that wants a sensible default — does NOT change
+# predict()'s behavior, which still requires an explicit model_name and
+# treats all three models as equally callable. See
+# reports/week8_final_model_decision.md for the reasoning.
+FINAL_MODEL_NAME = _CANDIDATES["final_model"]
+
 CANDIDATE_LOGREG_PATH = PROJECT_ROOT / _CANDIDATES["logistic_regression"]["artifact_path"]
 CANDIDATE_GB_PATH = PROJECT_ROOT / _CANDIDATES["gradient_boosting"]["artifact_path"]
 
@@ -102,3 +109,14 @@ HISTORICAL_RATE_FALLBACK = _HISTORICAL_RATE_SPEC["fallback_when_denominator_zero
 
 _NULL_HANDLING_SPEC = _CANDIDATES["required_null_handling"]["reminder_channel"]
 CANDIDATE_REMINDER_CHANNEL_NULL_REPLACEMENT = _NULL_HANDLING_SPEC["required_replacement"]
+
+# ---------------------------------------------------------------------------
+# Week 8 — Final model designation (default only; not a hard restriction —
+# see configs/config.yaml for why predict() must remain fully overridable)
+# ---------------------------------------------------------------------------
+
+_FINAL_MODEL = CONFIG["final_model"]
+FINAL_MODEL_NAME = _FINAL_MODEL["model_name"]
+FINAL_MODEL_CONFIRMED_BY = _FINAL_MODEL["confirmed_by"]
+FINAL_MODEL_RATIONALE = _FINAL_MODEL["rationale"]
+FINAL_MODEL_EXPECTED_VARIABILITY = _FINAL_MODEL["expected_variability"]

@@ -117,7 +117,17 @@ risk_categories:
 # All values below were verified against the actual .joblib artifacts before
 # being written here — not copied from the handoff document unchecked. See
 # reports/week6_model_verification.md for the verification evidence.
+#
+# WEEK 8 FINALIZATION: gradient_boosting is the confirmed final model for
+# this system. Both artifacts remain available and fully functional via
+# predict(record, model_name=...) for comparison/reproducibility, but the
+# `final_model` key below records the official Week 8 decision. See
+# reports/week8_final_model_decision.md for the full reasoning — including
+# the important caveat that this reflects "GB beats LR on the available
+# data" (independently confirmed), not "GB is a better algorithm in
+# general" (which did not survive multi-seed retrain testing).
 candidate_models:
+  final_model: "gradient_boosting"  # Week 8 — see reports/week8_final_model_decision.md
   logistic_regression:
     artifact_path: "models/candidates/healthconnect_logreg_pipeline.joblib"
   gradient_boosting:
@@ -194,3 +204,35 @@ candidate_models:
       accuracy: 0.6511
       roc_auc: 0.6941
       confusion_matrix: {tn: 307, fp: 176, fn: 161, tp: 322}
+
+# ---------------------------------------------------------------------------
+# Week 8 — Final model designation
+# ---------------------------------------------------------------------------
+# Data Science's Week 8 handoff confirms Gradient Boosting as the final
+# model, after resolving the Week 7 multi-seed discrepancy (see
+# reports/week8_ds_final_handoff.md and
+# reports/week8_multiseed_reconciliation.md for the full evidence trail).
+#
+# This is a DEFAULT for demonstration/presentation purposes only.
+# predict()'s model_name parameter remains fully overridable — this value
+# does not disable access to "baseline" or "logistic_regression". It only
+# answers "which model should the pipeline use if the caller doesn't
+# specify one," which Week 8's demonstration and presentation materials
+# need a single, stated answer to.
+final_model:
+  model_name: "gradient_boosting"
+  confirmed_by: "Data Science, Week 8 handoff"
+  rationale: >
+    On the actual available data, this specific trained GB artifact
+    consistently and measurably outperforms the LR artifact (confirmed
+    by resampling the fixed test set: GB wins 5/5 resamples, independently
+    reproduced by ML Engineering). The Week 7 multi-seed retraining test
+    showed this does not generalize as a claim about the GB algorithm
+    being fundamentally superior (2/5 wins on freshly retrained models
+    across different data partitions) -- so the claim is deliberately
+    narrow: "this trained model, on this data" rather than "gradient
+    boosting is the better algorithm for this problem."
+  expected_variability: "AUC 0.648-0.704 (mean ~0.677) if retrained on a
+    different data partition, per Data Science's cross-seed retraining
+    test. The reported 0.6941 is this specific model's confirmed result,
+    not a guaranteed floor."
